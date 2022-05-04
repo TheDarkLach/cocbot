@@ -8,7 +8,7 @@ import creds
 from coc import utils
 from discord.ext import commands
 
-from keep_alive import keep_alive
+#from keep_alive import keep_alive
 
 
 REPORT_STYLE = "{att.attacker.name} (No. {att.attacker.map_position}, TH{att.attacker.town_hall}) just {verb} {att.defender.name} (No. {att.defender.map_position}, TH{att.defender.town_hall}) for {att.stars} stars and {att.destruction}%. "
@@ -36,7 +36,6 @@ async def on_ready():
 @coc.WarEvents.war_attack()
 async def on_war_attack(attack, war):
     await bot.get_channel(creds.war_channel).send(REPORT_STYLE.format(att=attack, verb="attacked"))
-    #await bot.get_channel(creds.war_channel).send(f"{0} attacked {1} for {2}stars and {3} percent destruction").format(attack.attacker.name, attack.defender.name,attack.stars,attack.destruction)
 
 @coc_client.event
 @coc.WarEvents.state()
@@ -51,6 +50,12 @@ async def on_clan_member_join(member, clan):
         "{0.name} ({0.tag}) just " "joined our clan {1.name} ({1.tag})!".format(
             member, clan)
     )
+
+
+@coc_client.event
+@coc.ClientEvents.new_season_start()
+async def season_started():
+    await bot.get_channel(creds.default_channel).send("New season started, and will finish at %s", str(utils.get_season_end()))
 
 
 @coc_client.event
@@ -80,6 +85,19 @@ async def on_donate(old_member, member):
 
 
 
+
+@coc_client.event
+@coc.ClientEvents.maintenance_start()
+async def on_maintenance():
+    await bot.get_channel(creds.default_channel).send("Maintenace Started")
+
+
+
+@coc_client.event
+@coc.ClientEvents.maintenance_completion()
+async def on_maintenance_completion(time_started):
+    await bot.get_channel(creds.default_channel).send("Maintenace Ended; started at %s", time_started)    
+    
 @bot.command()
 async def player_heroes(ctx, player_tag):
     if not utils.is_valid_tag(player_tag):
@@ -250,6 +268,6 @@ async def war(ctx, clan_tag = creds.clan_tag):
     await ctx.send(embed=e)
 
 
-keep_alive()
+#keep_alive()
 myLoop.start()
 bot.run(creds.discord_bot_token)
